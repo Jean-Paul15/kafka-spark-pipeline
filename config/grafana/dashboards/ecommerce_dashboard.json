@@ -1,0 +1,76 @@
+{
+  "title": "🛒 E-Commerce Temps Réel",
+  "uid": "ecommerce-realtime",
+  "refresh": "5s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "💰 CA Total (dernière heure)",
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "unit": "currencyEUR",
+        "thresholds": {"steps": [{"color": "green","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, SUM(total_amount) as value FROM ecommerce_events WHERE ingested_at >= NOW() - INTERVAL '1 hour' AND status='completed'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 2, "type": "stat", "title": "📦 Transactions (1h)",
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "unit": "short",
+        "thresholds": {"steps": [{"color": "blue","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, COUNT(*) as value FROM ecommerce_events WHERE ingested_at >= NOW() - INTERVAL '1 hour'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 3, "type": "stat", "title": "🛍️ Panier Moyen",
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "currencyEUR",
+        "thresholds": {"steps": [{"color": "orange","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, AVG(total_amount) as value FROM ecommerce_events WHERE ingested_at >= NOW() - INTERVAL '1 hour' AND status='completed'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 4, "type": "stat", "title": "✅ Taux de conversion",
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "percentunit",
+        "thresholds": {"steps": [{"color": "red","value": null},{"color": "yellow","value": 0.7},{"color": "green","value": 0.85}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, SUM(CASE WHEN status='completed' THEN 1.0 ELSE 0 END)/NULLIF(COUNT(*),0) as value FROM ecommerce_events WHERE ingested_at >= NOW() - INTERVAL '1 hour'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "📈 CA par minute (temps réel)",
+      "gridPos": {"h": 8, "w": 16, "x": 0, "y": 4},
+      "fieldConfig": {"defaults": {"unit": "currencyEUR", "color": {"mode": "palette-classic"}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT date_trunc('minute', ingested_at) AS time, SUM(total_amount) AS \"Chiffre d'Affaires\" FROM ecommerce_events WHERE $__timeFilter(ingested_at) AND status='completed' GROUP BY 1 ORDER BY 1",
+        "format": "time_series"}]
+    },
+    {
+      "id": 6, "type": "piechart", "title": "🏷️ CA par Catégorie",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 4},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT category AS metric, SUM(total_amount) AS value FROM ecommerce_events WHERE ingested_at >= NOW() - INTERVAL '2 hours' AND status='completed' GROUP BY category ORDER BY value DESC",
+        "format": "table"}]
+    },
+    {
+      "id": 7, "type": "bargauge", "title": "📱 Transactions par Device",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 12},
+      "options": {"orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT device AS metric, COUNT(*) AS value FROM ecommerce_events WHERE ingested_at >= NOW() - INTERVAL '1 hour' GROUP BY device ORDER BY value DESC",
+        "format": "table"}]
+    },
+    {
+      "id": 8, "type": "table", "title": "🔴 Dernières transactions",
+      "gridPos": {"h": 6, "w": 16, "x": 8, "y": 12},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT ingested_at AS \"Heure\", city AS \"Ville\", category AS \"Catégorie\", product_name AS \"Produit\", total_amount AS \"Montant (€)\", status AS \"Statut\", payment_method AS \"Paiement\" FROM ecommerce_events ORDER BY ingested_at DESC LIMIT 20",
+        "format": "table"}]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "title": "🌤️ Météo Temps Réel – France & Monde",
+  "uid": "weather-realtime",
+  "refresh": "30s",
+  "time": { "from": "now-3h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "geomap", "title": "🗺️ Carte Météo en Temps Réel",
+      "gridPos": {"h": 12, "w": 14, "x": 0, "y": 0},
+      "options": {
+        "view": {"id": "europe", "lat": 47, "lon": 5, "zoom": 4},
+        "layers": [{"type": "markers", "config": {"size": {"fixed": 8}, "color": {"field": "temperature_c", "mode": "thresholds"}}}]
+      },
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT city AS name, latitude, longitude, temperature_c, weather_description, humidity_pct FROM v_weather_latest",
+        "format": "table"}]
+    },
+    {
+      "id": 2, "type": "table", "title": "🌡️ Conditions Actuelles",
+      "gridPos": {"h": 12, "w": 10, "x": 14, "y": 0},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT city AS \"Ville\", country AS \"Pays\", temperature_c AS \"Temp (°C)\", feels_like_c AS \"Ressenti\", humidity_pct AS \"Hum (%)\", wind_speed_kmh AS \"Vent (km/h)\", wind_direction AS \"Dir.\", weather_description AS \"Conditions\", CASE WHEN alert_count > 0 THEN '🚨 ' || alert_count ELSE '✅' END AS \"Alertes\" FROM v_weather_latest ORDER BY country, city",
+        "format": "table"}]
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "🌡️ Évolution Température – Paris",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "fieldConfig": {"defaults": {"unit": "celsius", "color": {"mode": "palette-classic"}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT fetched_at AS time, temperature_c AS \"Température\", feels_like_c AS \"Ressenti\" FROM weather_events WHERE city = 'Paris' AND $__timeFilter(fetched_at) ORDER BY fetched_at",
+        "format": "time_series"}]
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "💧 Précipitations & Vent",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT fetched_at AS time, precip_mm AS \"Pluie (mm)\", wind_speed_kmh AS \"Vent (km/h)\", wind_gusts_kmh AS \"Rafales (km/h)\" FROM weather_events WHERE city = 'Paris' AND $__timeFilter(fetched_at) ORDER BY fetched_at",
+        "format": "time_series"}]
+    },
+    {
+      "id": 5, "type": "bargauge", "title": "🌡️ Températures par Ville (maintenant)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "options": {"orientation": "horizontal", "min": -10, "max": 40},
+      "fieldConfig": {"defaults": {"unit": "celsius",
+        "thresholds": {"steps": [{"color":"blue","value": null},{"color":"green","value": 15},{"color":"yellow","value": 25},{"color":"red","value": 35}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT city AS metric, temperature_c AS value FROM v_weather_latest ORDER BY temperature_c DESC",
+        "format": "table"}]
+    },
+    {
+      "id": 6, "type": "stat", "title": "🚨 Villes en Alerte",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 20},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"},
+        "thresholds": {"steps": [{"color": "green","value": null},{"color": "red","value": 1}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, COUNT(*) as value FROM v_weather_latest WHERE alert_count > 0",
+        "format": "time_series"}]
+    },
+    {
+      "id": 7, "type": "table", "title": "🚨 Alertes Actives",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 20},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT city AS \"Ville\", alerts_json AS \"Alertes\", alert_count AS \"Nb\" FROM v_weather_latest WHERE alert_count > 0 ORDER BY alert_count DESC",
+        "format": "table"}]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "title": "🚕 NYC Taxi – Temps Réel",
+  "uid": "nyc-taxi-realtime",
+  "refresh": "5s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "🚕 Trips (dernière heure)",
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "unit": "short",
+        "thresholds": {"steps": [{"color": "yellow","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, COUNT(*) as value FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 2, "type": "stat", "title": "💵 Revenue Total",
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "currencyUSD",
+        "thresholds": {"steps": [{"color": "green","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, SUM(total_amount) as value FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 3, "type": "stat", "title": "📏 Distance Moyenne (miles)",
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "lengthmi", "decimals": 2,
+        "thresholds": {"steps": [{"color": "blue","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, AVG(distance_miles) as value FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 4, "type": "stat", "title": "💡 Pourboire Moyen",
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "currencyUSD",
+        "thresholds": {"steps": [{"color": "orange","value": null}]}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT NOW() as time, AVG(tip_amount) as value FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour'",
+        "format": "time_series"}]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "📈 Trips par minute",
+      "gridPos": {"h": 8, "w": 16, "x": 0, "y": 4},
+      "fieldConfig": {"defaults": {"color": {"fixedColor": "yellow", "mode": "fixed"}}},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT date_trunc('minute', ingested_at) AS time, COUNT(*) AS \"Nombre de trips\" FROM taxi_events WHERE $__timeFilter(ingested_at) GROUP BY 1 ORDER BY 1",
+        "format": "time_series"}]
+    },
+    {
+      "id": 6, "type": "bargauge", "title": "📍 Top Zones de Prise en Charge",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 4},
+      "options": {"orientation": "horizontal"},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT pickup_zone AS metric, COUNT(*) AS value FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour' GROUP BY pickup_zone ORDER BY value DESC LIMIT 10",
+        "format": "table"}]
+    },
+    {
+      "id": 7, "type": "piechart", "title": "💳 Mode de Paiement",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 12},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT payment_type AS metric, COUNT(*) AS value FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour' GROUP BY payment_type",
+        "format": "table"}]
+    },
+    {
+      "id": 8, "type": "histogram", "title": "📊 Distribution des Tarifs",
+      "gridPos": {"h": 6, "w": 9, "x": 6, "y": 12},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT total_amount FROM taxi_events WHERE ingested_at >= NOW() - INTERVAL '1 hour' AND total_amount > 0 AND total_amount < 100",
+        "format": "table"}]
+    },
+    {
+      "id": 9, "type": "table", "title": "🔴 Derniers Trips",
+      "gridPos": {"h": 6, "w": 9, "x": 15, "y": 12},
+      "targets": [{"datasource": "PostgreSQL-BigData", "rawSql":
+        "SELECT ingested_at AS \"Heure\", pickup_zone AS \"Prise en charge\", dropoff_zone AS \"Destination\", ROUND(distance_miles::numeric,2) AS \"Distance (mi)\", total_amount AS \"Tarif ($)\", payment_type AS \"Paiement\" FROM taxi_events ORDER BY ingested_at DESC LIMIT 15",
+        "format": "table"}]
+    }
+  ]
+}

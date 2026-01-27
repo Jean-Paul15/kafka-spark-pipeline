@@ -1,0 +1,81 @@
+# Environnements Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+
+# Données et modèles (à télécharger, jamais versionnés)
+*.parquet
+*.csv
+*.json.gz
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.pkl
+*.joblib
+*.h5
+*.onnx
+*.pt
+data/raw/
+data/processed/
+data/*.parquet
+
+# Documents
+*.pdf
+*.docx
+*.pptx
+*.xlsx
+
+# Spark / Hadoop / Kafka (sorties locales)
+checkpoint/
+checkpoints/
+spark-warehouse/
+metastore_db/
+derby.log
+*.crc
+kafka-logs/
+superset_home/
+
+# Node (outils éventuels)
+node_modules/
+
+# Builds, sorties, logs
+build/
+dist/
+out/
+output/
+outputs/
+logs/
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Éditeurs et système
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+.claude/
+.playwright-mcp/
+
+# Notes de travail
+.api-notes.md
