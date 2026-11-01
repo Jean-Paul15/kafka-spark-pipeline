@@ -1,6 +1,33 @@
-# kafka-spark-pipeline
+<div align="center">
+  <h1>kafka-spark-pipeline</h1>
+  <p><b>Un pipeline de streaming qui fait circuler des événements e-commerce, taxi, météo et immobiliers de Kafka vers Spark, puis vers PostgreSQL, HDFS, Redis, Grafana, Superset et Streamlit, le tout démarré par Docker Compose.</b></p>
+  <p>
+    <img src="https://img.shields.io/badge/Apache%20Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white" alt="Apache Kafka"/> <img src="https://img.shields.io/badge/Apache%20Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" alt="Apache Spark"/> <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis"/> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/> <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/Licence-Tous%20droits%20r%C3%A9serv%C3%A9s-lightgrey?style=flat-square" alt="Licence : tous droits réservés"/>
+    <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
+  </p>
+  <p>
+    <a href="#démarrer-en-cinq-minutes">Démarrer</a> ·
+    <a href="#comment-ça-marche">Architecture</a> ·
+    <a href="#stack-technique">Stack</a> ·
+    <a href="#structure-du-dépôt">Structure</a> ·
+    <a href="#tests">Tests</a>
+  </p>
+</div>
 
-Un pipeline de streaming qui fait circuler des événements e-commerce, taxi, météo et immobiliers de Kafka vers Spark, puis vers PostgreSQL, HDFS, Redis, Grafana, Superset et Streamlit, le tout démarré par Docker Compose.
+## Sommaire
+
+- [Ce que ça apporte](#ce-que-ça-apporte)
+- [Le problème](#le-problème)
+- [Démarrer en cinq minutes](#démarrer-en-cinq-minutes)
+- [Comment ça marche](#comment-ça-marche)
+- [Stack technique](#stack-technique)
+- [Structure du dépôt](#structure-du-dépôt)
+- [Tests](#tests)
+- [Limites et suite](#limites-et-suite)
+- [Licence et contact](#licence-et-contact)
 
 ## Ce que ça apporte
 
@@ -80,17 +107,19 @@ Trois choix structurent le dépôt.
 
 Les secrets ne vivent jamais dans le code : `docker-compose.yml` refuse de démarrer si `POSTGRES_PASSWORD`, `GRAFANA_ADMIN_PASSWORD` ou les variables Superset manquent dans `.env`.
 
-## Stack
+## Stack technique
 
-| Couche | Technologie |
-|---|---|
-| Messagerie | Apache Kafka et Zookeeper (Confluent 7.5.0), Kafka UI |
-| Calcul | Apache Spark 3.5 (PySpark), Structured Streaming et batch |
-| Stockage | PostgreSQL 15, HDFS (Hadoop 3.2.1), Redis 7 |
-| Visualisation | Grafana 10.2, Apache Superset 3.0, Streamlit, Plotly |
-| Producteurs | Python, kafka-python, Faker, pandas, pyarrow, requests |
-| Orchestration | Docker Compose, profils |
-| Tests | pytest |
+| Domaine | Technologies | Rôle dans le projet |
+|---|---|---|
+| Messagerie | <img src="https://img.shields.io/badge/Apache%20Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white" alt="Apache Kafka"/> <img src="https://img.shields.io/badge/Zookeeper-231F20?style=flat-square&logo=apache&logoColor=white" alt="Zookeeper"/> <img src="https://img.shields.io/badge/Kafka%20UI-231F20?style=flat-square&logo=apachekafka&logoColor=white" alt="Kafka UI"/> | Transport des événements, 6 topics de 3 partitions, Kafka UI pour les inspecter |
+| Calcul | <img src="https://img.shields.io/badge/Apache%20Spark-E25A1C?style=flat-square&logo=apachespark&logoColor=white" alt="Apache Spark"/> <img src="https://img.shields.io/badge/PySpark-E25A1C?style=flat-square&logo=apachespark&logoColor=white" alt="PySpark"/> | Structured Streaming en fenêtres et job batch qui calcule les KPI |
+| Stockage | <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL"/> <img src="https://img.shields.io/badge/Apache%20Hadoop-66CCFF?style=flat-square&logo=apachehadoop&logoColor=black" alt="Apache Hadoop"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis"/> | PostgreSQL et HDFS pour le durable, Redis pour les agrégats récents avec durée de vie |
+| Producteurs | <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/> <img src="https://img.shields.io/badge/Faker-3776AB?style=flat-square&logo=python&logoColor=white" alt="Faker"/> <img src="https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas&logoColor=white" alt="pandas"/> <img src="https://img.shields.io/badge/Apache%20Arrow-3776AB?style=flat-square&logo=apache&logoColor=white" alt="Apache Arrow"/> | Générateurs d'événements e-commerce, taxi, météo et immobilier |
+| Visualisation | <img src="https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white" alt="Grafana"/> <img src="https://img.shields.io/badge/Apache%20Superset-20A6C9?style=flat-square&logo=apache&logoColor=white" alt="Apache Superset"/> <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white" alt="Streamlit"/> <img src="https://img.shields.io/badge/Plotly-3F4F75?style=flat-square&logo=plotly&logoColor=white" alt="Plotly"/> | Tableaux de bord sur PostgreSQL et Redis |
+| Infrastructure | <img src="https://img.shields.io/badge/Docker%20Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose"/> | Pile unique démarrée par profils : immobilier, analytics, superset |
+| Tests | <img src="https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white" alt="pytest"/> | Tests des générateurs d'événements, sans broker ni Docker |
+
+Versions : Confluent 7.5.0, Spark 3.5, PostgreSQL 15, Hadoop 3.2.1, Redis 7, Grafana 10.2, Superset 3.0.
 
 ## Structure du dépôt
 
@@ -105,6 +134,14 @@ src/dashboard/         application Streamlit, client Redis, consommateur Kafka
 scripts/               lancement des producteurs, init HDFS, dashboards Grafana et Superset, diagnostic
 tests/                 tests des générateurs d'événements
 ```
+
+## Tests
+
+```bash
+python -m pytest
+```
+
+Les générateurs d'événements se vérifient par cinq tests `pytest` qui n'ont besoin ni de Kafka ni de Docker. Les jobs Spark se vérifient en lançant la pile.
 
 ## Limites et suite
 
